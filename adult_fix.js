@@ -1,5 +1,6 @@
-const url = $request.url;
-if (url.includes("forwardinfo.vvebo.vip/api/movie")) {
+[rewrite]
+^https?:\/\/forwardinfo\.vvebo\.vip\/api\/movie url script-response-body
+(() => {
   let body = $response.body;
   try {
     let obj = JSON.parse(body);
@@ -12,6 +13,4 @@ if (url.includes("forwardinfo.vvebo.vip/api/movie")) {
     console.log("JSON解析失败: " + e);
     $done({});
   }
-} else {
-  $done({});
-}
+})();
