@@ -11,4 +11,5 @@ if (!isImageRequest) {
   newUrl.searchParams.set('include_adult', 'true');
 }
 
+// 返回修改后的 URL
 $done({ url: newUrl.toString() });
