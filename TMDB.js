@@ -1,25 +1,38 @@
-// 获取当前请求的URL
+/**
+ * TMDB API请求参数优化脚本
+ * 功能：自动为TMDB API请求添加语言和成人内容参数，同时排除所有图片相关请求
+ */
 const url = $request.url;
-// 创建一个URL对象以便操作
-const newUrl = new URL(url);
+const newUrl = new URL(url);  // 创建可修改的URL对象
 
-// 判断是否为图片元数据请求（TMDB API中的图片信息请求，如电影/电视剧的图片列表）
-const isImageMetaRequest = /\/3\/(tv|movie)\/\d+\/(image|images)/.test(url);
+/**
+ * 判断是否为图片元数据API请求（匹配各种层级结构）
+ * 新增season/episode层级的识别
+ */
+const isImageMetaRequest = 
+    // 电影/电视剧基础图片元数据
+    /\/3\/(tv|movie)\/\d+\/(image|images)/.test(url) ||
+    // 剧集层级图片元数据 (如：.../tv/225008/season/1/episode/7/images)
+    /\/3\/tv\/\d+\/season\/\d+\/episode\/\d+\/images/.test(url);
 
-// 判断是否为实际的图片资源请求（包括各种尺寸的图片和常见图片格式）
+/**
+ * 判断是否为实际图片资源请求（通过后缀或CDN路径特征识别）
+ */
 const isImageResource = 
-    // 匹配常见的图片格式扩展名（忽略大小写），允许后面有查询参数
+    // 匹配常见图片格式后缀（支持带查询参数）
     /\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(url) || 
-    // 或者URL中包含TMDB图片CDN的特有路径（image.tmdb.org/t/p/）
+    // 匹配TMDB图片CDN路径模式
     url.includes('image.tmdb.org/t/p/');
 
-// 如果既不是图片元数据请求，也不是实际图片资源请求，则进行参数添加
+/**
+ * 仅对非图片类请求添加API参数
+ */
 if (!isImageMetaRequest && !isImageResource) {
-    // 设置语言为简体中文
+    // 设置中文语言偏好
     newUrl.searchParams.set('language', 'zh-CN');
-    // 包含成人内容
+    // 启用成人内容显示
     newUrl.searchParams.set('include_adult', 'true');
 }
 
-// 完成并返回新的URL
+// 返回修改后的URL
 $done({ url: newUrl.toString() });
